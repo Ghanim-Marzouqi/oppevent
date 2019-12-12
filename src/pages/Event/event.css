@@ -1,0 +1,49 @@
+.rbc-row {
+  min-height: 0px !important;
+}
+
+.rbc-agenda-table > thead > tr {
+  display: flex;
+  flex-direction: row;
+}
+
+.rbc-agenda-table > tbody > tr {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+}
+
+.rbc-agenda-table > tbody > tr > td {
+  width: 33.3% !important;
+}
+
+.rbc-header {
+  background-color: #fbe6a2;
+  height: 40px !important;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.element.style {
+  width: 50px !important;
+  min-width: 50px !important;
+  max-width: 52px !important;
+}
+
+.rbc-day-bg.rbc-today {
+  height: 0px !important;
+}
+
+.rbc-events-container.rtl {
+  margin: 0px 0px 0px 0px !important;
+}
+
+.react-time-picker__wrapper {
+  width: 250px !important;
+}
+
+.react-time-picker__inputGroup {
+  justify-content: space-evenly !important;
+}
