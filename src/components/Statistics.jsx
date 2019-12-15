@@ -1,35 +1,43 @@
 import React from "react";
 import { Grid } from "@material-ui/core";
-import {
-  Assignment,
-  AssignmentTurnedIn,
-  AssignmentLate,
-  Email
-} from "@material-ui/icons";
 import StatisticsCard from "./StatisticsCard";
 
 const Statistics = () => {
+  const icons = [
+    "/image/total_events.png",
+    "/image/active_events.png",
+    "/image/deleted_events.jpg",
+    "/image/invitations.jpg"
+  ];
   return (
     <React.Fragment>
-      <Grid item xs={12} md={8} lg={3}>
-        <StatisticsCard title="مجموع المهام" count={12} icon={<Assignment />} />
+      <Grid item xs={12} md={6} lg={3}>
+        <StatisticsCard
+          title="مجموع المهام"
+          count={12}
+          icon="/images/total_events.jpg"
+        />
       </Grid>
-      <Grid item xs={12} md={4} lg={3}>
+      <Grid item xs={12} md={6} lg={3}>
         <StatisticsCard
           title="المهام النشطة"
           count={12}
-          icon={<AssignmentTurnedIn />}
+          icon="/images/active_events.jpg"
         />
       </Grid>
-      <Grid item xs={12} md={4} lg={3}>
+      <Grid item xs={12} md={6} lg={3}>
         <StatisticsCard
           title="المهام المحذوفة"
           count={12}
-          icon={<AssignmentLate />}
+          icon="/images/deleted_events.jpg"
         />
       </Grid>
-      <Grid item xs={12} md={4} lg={3}>
-        <StatisticsCard title="مجموع الدعوات" count={12} icon={<Email />} />
+      <Grid item xs={12} md={6} lg={3}>
+        <StatisticsCard
+          title="مجموع الدعوات"
+          count={12}
+          icon="/images/invitations.jpg"
+        />
       </Grid>
     </React.Fragment>
   );

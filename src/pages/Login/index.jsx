@@ -63,29 +63,31 @@ const LoginPage = () => {
       isFormSubmitted: true
     });
 
-    if (form.username === "" && form.password === "") {
-      try {
-        const user = await authenticateUser(
-          form.username,
-          form.password,
-          form.authType
-        );
+    console.log(JSON.stringify(form));
 
-        if (user !== null) {
-          setUser(user);
-          setEvents(getUpdatedEvents(user.username));
+    if (form.username !== "" && form.password !== "") {
+      // authenticate user
+      const user = await authenticateUser(
+        form.username,
+        form.password,
+        form.authType
+      );
 
-          console.log("user authenticated");
-        } else {
-          setDialog({
-            isOpen: true,
-            message: "اسم المستخدم او كلمة المرور غير صحيحة"
-          });
-        }
-      } catch (error) {
+      console.log(user);
+
+      // check if user authenticated
+      if (user !== null) {
+        // load events related to user
+        const events = await getUpdatedEvents(user.username);
+        console.log(events);
+
+        // update contexts
+        setUser(user);
+        setEvents(events);
+      } else {
         setDialog({
           isOpen: true,
-          message: error
+          message: "اسم المستخدم او كلمة المرور غير صحيحة"
         });
       }
     }

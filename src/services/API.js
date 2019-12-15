@@ -26,14 +26,15 @@ export const authenticateUser = async (username, password, type) => {
     // check response status
     if (status === "success") {
       const user = data.results[0];
-      console.log(message);
+      console.log(`AUTH SUCCESS: ${message}`);
       return user;
     } else {
-      console.log(message);
+      console.log(`AUTH FAILURE: ${message}`);
       return null;
     }
   } catch (error) {
-    return new Error("حدث خطأ اثناء التحقق من هوية المستخدم");
+    console.log(`AUTH ERROR: ${error}`);
+    return null;
   }
 };
 
@@ -53,13 +54,14 @@ export const getUpdatedEvents = async username => {
     // check response status
     if (status === "success") {
       const results = data.results;
+      console.log(`AUTH SUCCESS: ${message}`);
       return results;
     } else {
-      console.log(message);
+      console.log(`AUTH FAILURE: ${message}`);
       return [];
     }
   } catch (error) {
-    console.log(error);
+    console.log(`AUTH ERROR: ${error}`);
     return [];
   }
 };
