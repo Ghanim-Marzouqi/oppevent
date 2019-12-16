@@ -1,7 +1,7 @@
 import React from "react";
+import history from "../services/history";
 import { ListItem, ListItemIcon, ListItemText } from "@material-ui/core";
 import { Home, ListAlt, ExitToApp } from "@material-ui/icons";
-import history from "../services/history";
 
 export const mainListItems = (
   <div>
@@ -22,7 +22,7 @@ export const mainListItems = (
 
 export const secondaryListItems = (
   <div>
-    <ListItem button onClick={() => history.goBack()}>
+    <ListItem button onClick={() => history.replace('/')}>
       <ListItemIcon>
         <ExitToApp />
       </ListItemIcon>

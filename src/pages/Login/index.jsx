@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useContext } from "react";
-import { Redirect, withRouter } from "react-router-dom";
+import { Redirect, withRouter, Link } from "react-router-dom";
+import history from "../../services/history";
 import { useStyles } from "./login.style";
 import "./login.css";
 import {
@@ -10,7 +11,6 @@ import {
   FormControlLabel,
   Checkbox,
   Button,
-  Link,
   Box,
   Paper
 } from "@material-ui/core";
@@ -18,17 +18,13 @@ import Copyright from "../../components/Copyright";
 import Logo from "../../resources/images/logo.png";
 import InfoDialog from "../../components/InfoDialog";
 
-import history from "../../services/history";
-
-import { authenticateUser, getUpdatedEvents } from "../../services/API";
+import { authenticateUser } from "../../services/API";
 
 // contexts
 import UserContext from "../../context/UserContext";
-import EventContext from "../../context/EventContext";
 
 const LoginPage = () => {
   const { user, setUser } = useContext(UserContext);
-  const { setEvents } = useContext(EventContext);
   const classes = useStyles();
 
   // initail form data
@@ -36,20 +32,28 @@ const LoginPage = () => {
     username: "",
     password: "",
     authType: "db",
+    isRememberEnabled: false,
     isFormSubmitted: false
   };
 
   const [form, setForm] = useState(initialForm);
   const [dialog, setDialog] = useState({
     isOpen: false,
+    title: "",
     message: ""
   });
 
+  // trigger side effects
   useEffect(() => {
+    // check local storage
+    if (localStorage.getItem("user") !== null) {
+      const storedUser = JSON.parse(localStorage.getItem("user"));
+      setForm(storedUser);
+    }
+
     // check if user available
     if (user !== null) {
-      console.log(user);
-      console.log("Navigate into Events Page");
+      history.push("/event");
     } else {
       console.log("User is not logged in");
     }
@@ -77,16 +81,18 @@ const LoginPage = () => {
 
       // check if user authenticated
       if (user !== null) {
-        // load events related to user
-        const events = await getUpdatedEvents(user.username);
-        console.log(events);
-
-        // update contexts
         setUser(user);
-        setEvents(events);
+
+        // store user crendetails in local storge
+        if (form.isRememberEnabled) {
+          localStorage.setItem("user", JSON.stringify(form));
+        } else {
+          localStorage.clear();
+        }
       } else {
         setDialog({
           isOpen: true,
+          title: "حدث خطأ",
           message: "اسم المستخدم او كلمة المرور غير صحيحة"
         });
       }
@@ -157,7 +163,17 @@ const LoginPage = () => {
               />
               <FormControlLabel
                 classes={classes.textfield}
-                control={<Checkbox value="remember" color="primary" />}
+                control={
+                  <Checkbox
+                    name="checkbox"
+                    value="remember"
+                    color="primary"
+                    checked={form.isRememberEnabled}
+                    onChange={e =>
+                      setForm({ ...form, isRememberEnabled: e.target.checked })
+                    }
+                  />
+                }
                 label="تذكرني"
               />
               <Button
@@ -173,9 +189,15 @@ const LoginPage = () => {
               <Grid container>
                 <Grid item xs>
                   <Link
-                    className={classes.textfield}
-                    href="/forget-password"
-                    variant="body2"
+                    onClick={() =>
+                      setDialog({
+                        isOpen: true,
+                        title: "ملاحظة",
+                        message: "سيتم تفعيل هذه الخاصية قريبا"
+                      })
+                    }
+                    className={classes.textField}
+                    to="#"
                   >
                     هل نسيت كلمة المرور؟
                   </Link>

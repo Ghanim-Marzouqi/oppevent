@@ -27,7 +27,8 @@ export const useStyles = makeStyles(theme => ({
     backgroundColor: "transparent"
   },
   textField: {
-    padding: 20
+    margin: 10,
+    textDecoration: "none"
   },
   form: {
     width: "100%", // Fix IE 11 issue.

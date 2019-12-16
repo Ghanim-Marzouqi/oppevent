@@ -1,8 +1,6 @@
 import React, { useState, useMemo } from "react";
-import { BrowserRouter as Router } from "react-router-dom";
 import { createMuiTheme, ThemeProvider } from "@material-ui/core/styles";
 
-import history from "./services/history";
 import Routes from "./routes";
 
 // import contexts
@@ -48,9 +46,7 @@ const App = () => {
         />
         <ThemeProvider theme={theme}>
           <RTL>
-            <Router basename={window.location.pathname || ""} history={history}>
-              <Routes />
-            </Router>
+            <Routes />
           </RTL>
         </ThemeProvider>
       </EventContext.Provider>

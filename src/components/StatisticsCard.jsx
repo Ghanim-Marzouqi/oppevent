@@ -5,39 +5,43 @@ import { Card, CardContent, Typography, CardMedia } from "@material-ui/core";
 const useStyles = makeStyles(theme => ({
   card: {
     display: "flex",
-    height: 100
+    height: 100,
+    width: "100%"
   },
   details: {
     display: "flex",
-    flexDirection: "column"
+    flexDirection: "column",
+    width: "70%"
   },
   content: {
-    flex: "1 0 auto",
-    width: 160
+    flex: "1 0 auto"
   },
   cover: {
-    width: 120,
+    width: "40%",
     display: "flex",
     justifyContent: "center",
-    alignItems: "center"
+    alignItems: "center",
+    backgroundColor: "#fdcb6e"
   }
 }));
 
-const StatisticsCard = ({ title, count, icon }) => {
+const StatisticsCard = ({ title, count, icon, bgColor }) => {
   const classes = useStyles();
 
   return (
     <Card className={classes.card}>
       <div className={classes.details}>
         <CardContent className={classes.content}>
-          <Typography variant="subtitle1">{title}</Typography>
-          <Typography variant="h6" color="textSecondary">
-            {count}
+          <Typography variant="subtitle1" color="textSecondary">
+            {title}
           </Typography>
+          <Typography variant="h6">{count}</Typography>
         </CardContent>
       </div>
       {/* <div className={classes.cover}>{icon}</div> */}
-      <CardMedia className={classes.cover} image={icon} />
+      <div className={classes.cover} style={{ backgroundColor: bgColor }}>
+        {icon}
+      </div>
     </Card>
   );
 };

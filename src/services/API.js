@@ -38,12 +38,12 @@ export const authenticateUser = async (username, password, type) => {
   }
 };
 
-// fetch updated events
-export const getUpdatedEvents = async username => {
+// fetch events
+export const getEvents = async (username, category) => {
   try {
     // call API
     const response = await axios.get(
-      `${FETCH_EVENTS_URL}?username=${username}`
+      `${FETCH_EVENTS_URL}?username=${username}&category=${category}`
     );
 
     // get data from response

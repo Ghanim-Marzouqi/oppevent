@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import { Redirect, withRouter } from "react-router-dom";
 import clsx from "clsx";
 import { Calendar, Views } from "react-big-calendar";
@@ -7,6 +7,7 @@ import moment from "moment";
 import localizer from "react-big-calendar/lib/localizers/globalize";
 import globalize from "globalize";
 import { useStyles } from "./event.style";
+import history from "../../services/history";
 import "./event.css";
 import {
   CssBaseline,
@@ -32,12 +33,11 @@ import NewEventDialog from "../../components/NewEventDailog";
 import EditEventDialog from "../../components/EditEventDialog";
 import { CALANDER_CONTROL_NAMES } from "../../constants";
 import {
-  getUpdatedEvents,
+  getEvents,
   addNewEvent,
   updateEvent,
   deleteEvent
 } from "../../services/API";
-import history from "../../services/history";
 
 import UserContext from "../../context/UserContext";
 import EventContext from "../../context/EventContext";
@@ -53,7 +53,7 @@ const EventPage = () => {
   const classes = useStyles();
 
   // contexts
-  const { user, setUser } = useContext(UserContext);
+  const { user } = useContext(UserContext);
   const { events, setEvents } = useContext(EventContext);
 
   // initial states
@@ -67,6 +67,13 @@ const EventPage = () => {
     allDay: 1
   };
 
+  // initial dialog
+  const initialDialog = {
+    title: "",
+    message: "",
+    isOpen: false
+  };
+
   // states
   const [isDrawerOpen, setDrawerOpen] = useState(true);
   const [startTime, setStartTime] = useState("");
@@ -75,6 +82,46 @@ const EventPage = () => {
   const [dialogType, setDialogType] = useState("");
   const [isActive, setActive] = useState(false);
   const [event, setEvent] = useState(initialEvent);
+  const [dialog, setDialog] = useState(initialDialog);
+
+  // count states
+  const [totalEventsCount, setTotalEventsCount] = useState(0);
+  const [activeEventsCount, setActiveEventsCount] = useState(0);
+  const [deletedEventsCount, setDeletedEventsCount] = useState(0);
+  const [invitationsCount] = useState(0);
+
+  // get total events
+  const getTotalEvents = async username => {
+    const totalEvents = await getEvents(username, "");
+    setTotalEventsCount(totalEvents.length);
+  };
+
+  // get active events
+  const getActiveEvents = async username => {
+    const activeEvents = await getEvents(username, "active");
+    setEvents(activeEvents);
+    setActiveEventsCount(activeEvents.length);
+  };
+
+  // get deleted events
+  const getDeletedEvents = async username => {
+    const deletedEvents = await getEvents(username, "deleted");
+    setDeletedEventsCount(deletedEvents.length);
+  };
+
+  // trigger side effects
+  useEffect(() => {
+    console.log("Effect Called");
+    // check logged user
+    if (user !== null) {
+      // set counts
+      getTotalEvents(user.username);
+      getActiveEvents(user.username);
+      getDeletedEvents(user.username);
+    } else {
+      history.replace("/");
+    }
+  }, []);
 
   // handle drawer open
   const handleDrawerOpen = () => {
@@ -222,7 +269,7 @@ const EventPage = () => {
 
       // get updated event
       if (newEvent !== null) {
-        const updatedEvents = await getUpdatedEvents(user.username);
+        const updatedEvents = await getEvents(user.username);
         setEvents(updatedEvents);
       }
     } else {
@@ -246,7 +293,7 @@ const EventPage = () => {
 
       // get updated event
       if (newEvent !== null) {
-        const updatedEvents = await getUpdatedEvents(user.username);
+        const updatedEvents = await getEvents(user.username);
         setEvents(updatedEvents);
       }
     }
@@ -299,7 +346,7 @@ const EventPage = () => {
 
       // get updated events
       if (updatedEvent !== null) {
-        const updatedEvents = await getUpdatedEvents(user.username);
+        const updatedEvents = await getEvents(user.username);
         setEvents(updatedEvents);
       }
     } else {
@@ -323,7 +370,7 @@ const EventPage = () => {
 
       // get updated events
       if (updatedEvent !== null) {
-        const updatedEvents = await getUpdatedEvents(user.username);
+        const updatedEvents = await getEvents(user.username);
         setEvents(updatedEvents);
       }
     }
@@ -345,7 +392,7 @@ const EventPage = () => {
 
     if (deletedEvent !== null) {
       // get updated events
-      const updatedEvents = await getUpdatedEvents(user.username);
+      const updatedEvents = await getEvents(user.username);
       setEvents(updatedEvents);
     }
 
@@ -356,6 +403,10 @@ const EventPage = () => {
   const handleDialogClose = () => {
     setEvent(initialEvent);
     setVisibility(false);
+    setDialog({
+      ...dialog,
+      isOpen: false
+    });
   };
 
   return user === null ? (
@@ -390,7 +441,7 @@ const EventPage = () => {
             مهامي
           </Typography>
           <IconButton color="inherit">
-            <Badge badgeContent={4} color="secondary">
+            <Badge badgeContent={0} color="secondary">
               <Notifications />
             </Badge>
           </IconButton>
@@ -421,7 +472,12 @@ const EventPage = () => {
         <Container maxWidth="lg" className={classes.container}>
           <Grid container spacing={3}>
             {/* Statistics */}
-            <Statistics />
+            <Statistics
+              total={totalEventsCount}
+              active={activeEventsCount}
+              deleted={deletedEventsCount}
+              invitations={invitationsCount}
+            />
             {/* Calander */}
             <Grid item xs={12}>
               <Paper className={classes.paper}>

@@ -1,42 +1,44 @@
 import React from "react";
 import { Grid } from "@material-ui/core";
+import { FaTasks, FaCogs, FaTrash, FaMailBulk } from "react-icons/fa";
 import StatisticsCard from "./StatisticsCard";
 
-const Statistics = () => {
-  const icons = [
-    "/image/total_events.png",
-    "/image/active_events.png",
-    "/image/deleted_events.jpg",
-    "/image/invitations.jpg"
-  ];
+const Statistics = ({ total, active, deleted, invitations }) => {
+  const styles = {
+    iconStyle: { fontSize: 45, color: "#fff" }
+  };
   return (
     <React.Fragment>
       <Grid item xs={12} md={6} lg={3}>
         <StatisticsCard
           title="مجموع المهام"
-          count={12}
-          icon="/images/total_events.jpg"
+          count={total}
+          icon={<FaTasks style={styles.iconStyle} />}
+          bgColor="#ff7675"
         />
       </Grid>
       <Grid item xs={12} md={6} lg={3}>
         <StatisticsCard
           title="المهام النشطة"
-          count={12}
-          icon="/images/active_events.jpg"
+          count={active}
+          icon={<FaCogs style={styles.iconStyle} />}
+          bgColor="#81ecec"
         />
       </Grid>
       <Grid item xs={12} md={6} lg={3}>
         <StatisticsCard
           title="المهام المحذوفة"
-          count={12}
-          icon="/images/deleted_events.jpg"
+          count={deleted}
+          icon={<FaTrash style={styles.iconStyle} />}
+          bgColor="#b2bec3"
         />
       </Grid>
       <Grid item xs={12} md={6} lg={3}>
         <StatisticsCard
           title="مجموع الدعوات"
-          count={12}
-          icon="/images/invitations.jpg"
+          count={invitations}
+          icon={<FaMailBulk style={styles.iconStyle} />}
+          bgColor="#fdcb6e"
         />
       </Grid>
     </React.Fragment>

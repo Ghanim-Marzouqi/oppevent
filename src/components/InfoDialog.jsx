@@ -17,7 +17,7 @@ const InfoDialog = ({ dialog, onDialogClose }) => {
       aria-labelledby="alert-dialog-title"
       aria-describedby="alert-dialog-description"
     >
-      <DialogTitle id="alert-dialog-title">{"خطأ"}</DialogTitle>
+      <DialogTitle id="alert-dialog-title">{dialog.title}</DialogTitle>
       <DialogContent>
         <DialogContentText id="alert-dialog-description">
           {dialog.message}
