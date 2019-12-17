@@ -1,6 +1,7 @@
 import axios from "axios";
 import {
   AUTH_URL,
+  ADD_USER_URL,
   FETCH_EVENTS_URL,
   ADD_EVENT_URL,
   ADD_EVENT_WITH_FILE_URL,
@@ -34,6 +35,44 @@ export const authenticateUser = async (username, password, type) => {
     }
   } catch (error) {
     console.log(`AUTH ERROR: ${error}`);
+    return null;
+  }
+};
+
+// add new user
+export const createUser = async (
+  username,
+  password,
+  name,
+  email,
+  department
+) => {
+  try {
+    // call API
+    const response = await axios.post(ADD_USER_URL, {
+      username,
+      password,
+      name,
+      email,
+      department
+    });
+
+    // get data from response
+    const data = response.data;
+    const status = data.status;
+    const message = data.message;
+
+    // check response status
+    if (status === "success") {
+      const results = data.results;
+      console.log(`CREATE USER SUCCESS: ${message}`);
+      return results;
+    } else {
+      console.log(`CREATE USER FAILURE: ${message}`);
+      return null;
+    }
+  } catch (error) {
+    console.log(`CREATE USER ERROR: ${error}`);
     return null;
   }
 };

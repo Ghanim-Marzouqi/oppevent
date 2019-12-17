@@ -1,15 +1,12 @@
-import React, { useState, useEffect, useContext } from "react";
-import { Redirect, withRouter, Link } from "react-router-dom";
-import history from "../../services/history";
-import { useStyles } from "./login.style";
-import "./login.css";
+import React, { useState } from "react";
+import { withRouter } from "react-router-dom";
+import { useStyles } from "./signup.style";
+import "./signup.css";
 import {
   Grid,
   CssBaseline,
   Typography,
   TextField,
-  FormControlLabel,
-  Checkbox,
   Button,
   Box,
   Paper
@@ -18,21 +15,19 @@ import Copyright from "../../components/Copyright";
 import Logo from "../../resources/images/logo.png";
 import InfoDialog from "../../components/InfoDialog";
 
-import { authenticateUser } from "../../services/API";
+import { createUser } from "../../services/API";
 
-// contexts
-import UserContext from "../../context/UserContext";
-
-const LoginPage = () => {
-  const { user, setUser } = useContext(UserContext);
+const SignUpPage = () => {
+  // load page styles
   const classes = useStyles();
 
   // initail form data
   let initialForm = {
     username: "",
     password: "",
-    authType: process.env.REACT_APP_AUTH_TYPE,
-    isRememberEnabled: false,
+    name: "",
+    email: "",
+    department: "",
     isFormSubmitted: false
   };
 
@@ -43,22 +38,6 @@ const LoginPage = () => {
     message: ""
   });
 
-  // trigger side effects
-  useEffect(() => {
-    // check local storage
-    if (localStorage.getItem("user") !== null) {
-      const storedUser = JSON.parse(localStorage.getItem("user"));
-      setForm(storedUser);
-    }
-
-    // check if user available
-    if (user !== null) {
-      history.push("/event");
-    } else {
-      console.log("User is not logged in");
-    }
-  }, [user]);
-
   const handleSubmit = async e => {
     e.preventDefault();
 
@@ -67,33 +46,36 @@ const LoginPage = () => {
       isFormSubmitted: true
     });
 
-    console.log(JSON.stringify(form));
-
-    if (form.username !== "" && form.password !== "") {
-      // authenticate user
-      const user = await authenticateUser(
+    if (
+      form.username !== "" &&
+      form.password !== "" &&
+      form.name !== "" &&
+      form.email !== "" &&
+      form.department !== ""
+    ) {
+      // create user
+      const user = await createUser(
         form.username,
         form.password,
-        form.authType
+        form.name,
+        form.email,
+        form.department
       );
 
       console.log(user);
 
-      // check if user authenticated
+      // check if user created
       if (user !== null) {
-        setUser(user);
-
-        // store user crendetails in local storge
-        if (form.isRememberEnabled) {
-          localStorage.setItem("user", JSON.stringify(form));
-        } else {
-          localStorage.clear();
-        }
+        setDialog({
+          isOpen: true,
+          title: "ملاحظة",
+          message: "تم تسجيل المستخدم بنجاح"
+        });
       } else {
         setDialog({
           isOpen: true,
           title: "حدث خطأ",
-          message: "اسم المستخدم او كلمة المرور غير صحيحة"
+          message: "حدث خطأ اثناء تسجيل مستخدم جديد"
         });
       }
     }
@@ -107,9 +89,7 @@ const LoginPage = () => {
     });
   };
 
-  return user !== null ? (
-    <Redirect to={{ pathname: "/event" }} />
-  ) : (
+  return (
     <div>
       <Grid dir="rtl" container component="main" className={classes.root}>
         <CssBaseline />
@@ -124,6 +104,22 @@ const LoginPage = () => {
               مهامي
             </Typography>
             <form className={classes.form} onSubmit={handleSubmit}>
+              <TextField
+                variant="standard"
+                margin="normal"
+                fullWidth
+                id="name"
+                label="الأسم"
+                name="name"
+                autoComplete="name"
+                autoFocus
+                value={form.name || ""}
+                error={form.name === "" && form.isFormSubmitted}
+                helperText={form.name === "" ? "الرجاء ادخال الأسم" : " "}
+                onChange={e => {
+                  setForm({ ...form, name: e.target.value });
+                }}
+              />
               <TextField
                 variant="standard"
                 margin="normal"
@@ -161,20 +157,38 @@ const LoginPage = () => {
                   setForm({ ...form, password: e.target.value });
                 }}
               />
-              <FormControlLabel
+              <TextField
                 classes={classes.textfield}
-                control={
-                  <Checkbox
-                    name="checkbox"
-                    value="remember"
-                    color="primary"
-                    checked={form.isRememberEnabled}
-                    onChange={e =>
-                      setForm({ ...form, isRememberEnabled: e.target.checked })
-                    }
-                  />
-                }
-                label="تذكرني"
+                variant="standard"
+                margin="normal"
+                fullWidth
+                name="email"
+                label="الأيميل"
+                type="email"
+                id="email"
+                autoComplete="email"
+                value={form.email || ""}
+                error={form.email === "" && form.isFormSubmitted}
+                helperText={form.email === "" ? "الرجاء ادخال الأيميل" : " "}
+                onChange={e => {
+                  setForm({ ...form, email: e.target.value });
+                }}
+              />
+              <TextField
+                classes={classes.textfield}
+                variant="standard"
+                margin="normal"
+                fullWidth
+                name="department"
+                label="الفرع"
+                id="department"
+                autoComplete="department"
+                value={form.department || ""}
+                error={form.department === "" && form.isFormSubmitted}
+                helperText={form.department === "" ? "الرجاء ادخال الفرع" : " "}
+                onChange={e => {
+                  setForm({ ...form, department: e.target.value });
+                }}
               />
               <Button
                 type="submit"
@@ -182,27 +196,16 @@ const LoginPage = () => {
                 variant="contained"
                 color="primary"
                 className={classes.submit}
-                disabled={form.username === "" || form.password === ""}
+                disabled={
+                  form.username === "" ||
+                  form.password === "" ||
+                  form.name === "" ||
+                  form.email === "" ||
+                  form.department === ""
+                }
               >
-                تسجيل الدخول
+                تسجيل مستخدم جديد
               </Button>
-              <Grid container>
-                <Grid item xs>
-                  <Link
-                    onClick={() =>
-                      setDialog({
-                        isOpen: true,
-                        title: "ملاحظة",
-                        message: "سيتم تفعيل هذه الخاصية قريبا"
-                      })
-                    }
-                    className={classes.textField}
-                    to="#"
-                  >
-                    هل نسيت كلمة المرور؟
-                  </Link>
-                </Grid>
-              </Grid>
               <Box mt={5}>
                 <Copyright />
               </Box>
@@ -216,4 +219,4 @@ const LoginPage = () => {
   );
 };
 
-export default withRouter(LoginPage);
+export default withRouter(SignUpPage);

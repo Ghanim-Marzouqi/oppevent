@@ -3,6 +3,7 @@ import { Switch, Route } from "react-router-dom";
 
 // pages
 import LoginPage from "../pages/Login";
+import SignUpPage from "../pages/SignUp";
 import EventPage from "../pages/Event";
 import ForgetPasswordPage from "../pages/ForgetPassword";
 import Page404 from "../pages/404";
@@ -11,6 +12,7 @@ const Routes = () => {
   return (
     <Switch>
       <Route path="/" exact component={LoginPage} />
+      <Route path="/signup" exact component={SignUpPage} />
       <Route path="/event" exact component={EventPage} />
       <Route path="/forget-password" exact component={ForgetPasswordPage} />
       <Route component={Page404} />
