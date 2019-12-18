@@ -9,7 +9,8 @@ import {
   Checkbox,
   Grid,
   FormGroup,
-  FormControlLabel
+  FormControlLabel,
+  ButtonGroup
 } from "@material-ui/core";
 import DateFnsUtils from "@date-io/date-fns";
 import {
@@ -17,30 +18,57 @@ import {
   TimePicker,
   DatePicker
 } from "@material-ui/pickers";
-import { useTheme } from "@material-ui/core/styles";
-import { FaEdit } from "react-icons/fa";
+import { makeStyles, useTheme } from "@material-ui/core/styles";
+import { Edit, Delete, Email } from "@material-ui/icons";
 import "./components.css";
+import { green } from "@material-ui/core/colors";
 
 const EditEventDialog = props => {
   // theme direction for arabic time picker support
   const theme = useTheme();
   const rtl = theme.direction === "rtl";
 
+  const useStyles = makeStyles(theme => ({
+    margin: {
+      margin: theme.spacing(1)
+    }
+  }));
+
   return (
     <MuiPickersUtilsProvider utils={DateFnsUtils}>
       <div dir="rtl">
-        <DialogTitle id="form-dialog-title">
-          <Grid container justify="space-around" spacing={2}>
-            <Grid item xs={10}>
-              مهمة مسجلة
-            </Grid>
-            <Grid item xs={2}>
-              <Button color="default" onClick={props.onEditToggle}>
-                <FaEdit style={{ color: "#ff0000", fontSize: 20 }} />
-              </Button>
-            </Grid>
-          </Grid>
-        </DialogTitle>
+        <DialogTitle id="form-dialog-title">مهمة مسجلة</DialogTitle>
+        <DialogContent>
+          <ButtonGroup fullWidth>
+            <Button
+              variant="contained"
+              color="primary"
+              startIcon={<Edit />}
+              className={useStyles().margin}
+              onClick={props.onEditToggle}
+            >
+              تعديل
+            </Button>
+            <Button
+              variant="contained"
+              color="secondary"
+              startIcon={<Delete />}
+              className={useStyles().margin}
+              onClick={props.onDelete}
+            >
+              حذف
+            </Button>
+            <Button
+              variant="contained"
+              style={{ backgroundColor: green[500], color: "#FFF" }}
+              startIcon={<Email />}
+              className={useStyles().margin}
+            >
+              دعوة
+            </Button>
+          </ButtonGroup>
+        </DialogContent>
+        >
         <DialogContent>
           <TextField
             id="title"
@@ -84,7 +112,7 @@ const EditEventDialog = props => {
                   id="startDate"
                   name="startDate"
                   label="من"
-                  value={moment(props.event.start).format("DD/MM/YYYY")}
+                  value={moment(props.event.start).format("YYYY-MM-DD")}
                   InputProps={{
                     readOnly: true
                   }}
@@ -97,7 +125,7 @@ const EditEventDialog = props => {
                   id="endDate"
                   name="endDate"
                   label="إلى"
-                  value={moment(props.event.end).format("DD/MM/YYYY")}
+                  value={moment(props.event.end).format("YYYY-MM-DD")}
                   InputProps={{
                     readOnly: true
                   }}
@@ -114,18 +142,22 @@ const EditEventDialog = props => {
                 <DatePicker
                   disablePast
                   openTo="year"
-                  format="dd/MM/yyyy"
-                  label="Date of birth"
+                  format="yyyy-MM-dd"
+                  label="من"
                   views={["year", "month", "date"]}
+                  value={props.event.start}
+                  onChange={props.onStartDatePickerChange}
                 />
               </Grid>
               <Grid item xs={6}>
                 <DatePicker
                   disablePast
                   openTo="year"
-                  format="dd/MM/yyyy"
-                  label="Date of birth"
+                  format="yyyy-MM-dd"
+                  label="إلى"
                   views={["year", "month", "date"]}
+                  value={props.event.end}
+                  onChange={props.onEndDatePickerChange}
                 />
               </Grid>
             </Grid>
@@ -141,7 +173,20 @@ const EditEventDialog = props => {
             />
           </DialogContent>
         ) : (
-          <></>
+          <DialogContent>
+            <Grid container justify="center">
+              <Grid item xs={3}>
+                المرفقات:
+              </Grid>
+              <Grid item xs={9}>
+                {props.event.file !== null ? (
+                  <a href={props.event.file}>تحميل الملف</a>
+                ) : (
+                  "لا يوجد مرفقات"
+                )}
+              </Grid>
+            </Grid>
+          </DialogContent>
         )}
         <DialogContent>
           <FormControlLabel
@@ -246,7 +291,7 @@ const EditEventDialog = props => {
           <Button
             disabled={!props.event.isFormEditted}
             color="primary"
-            onClick={props.onSubmit}
+            onClick={props.onEditSubmit}
           >
             حفظ
           </Button>

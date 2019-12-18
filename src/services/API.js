@@ -186,7 +186,10 @@ export const updateEvent = async (username, allDay, isFile, event) => {
       title: event.title,
       desc: event.desc,
       startDate: event.start,
-      endDate: event.end
+      endDate: event.end,
+      canView: event.canView,
+      canDelete: event.canDelete,
+      canUpdate: event.canUpdate
     };
 
     // call API
@@ -214,6 +217,9 @@ export const updateEvent = async (username, allDay, isFile, event) => {
     formData.append("startDate", event.start);
     formData.append("endDate", event.end);
     formData.append("file", event.file);
+    formData.append("canView", event.canView);
+    formData.append("canDelete", event.canDelete);
+    formData.append("canUpdate", event.canUpdate);
 
     console.log(formData);
 

@@ -1,5 +1,5 @@
 import React, { useState, useContext, useEffect } from "react";
-import { Redirect, withRouter } from "react-router-dom";
+import { Redirect, withRouter, useHistory } from "react-router-dom";
 import clsx from "clsx";
 import { Calendar, Views } from "react-big-calendar";
 import "react-big-calendar/lib/css/react-big-calendar.css";
@@ -7,7 +7,6 @@ import moment from "moment";
 import localizer from "react-big-calendar/lib/localizers/globalize";
 import globalize from "globalize";
 import { useStyles } from "./event.style";
-import history from "../../services/history";
 import "./event.css";
 import {
   CssBaseline,
@@ -31,6 +30,7 @@ import Statistics from "../../components/Statistics";
 import { mainListItems, secondaryListItems } from "../../components/ListItems";
 import NewEventDialog from "../../components/NewEventDailog";
 import EditEventDialog from "../../components/EditEventDialog";
+import InfoDialog from "../../components/InfoDialog";
 import { CALANDER_CONTROL_NAMES } from "../../constants";
 import {
   getEvents,
@@ -52,8 +52,11 @@ const EventPage = () => {
   // styles
   const classes = useStyles();
 
+  // history
+  const history = useHistory();
+
   // contexts
-  const { user } = useContext(UserContext);
+  const { user, setUser } = useContext(UserContext);
   const { events, setEvents } = useContext(EventContext);
 
   // initial states
@@ -61,8 +64,8 @@ const EventPage = () => {
     eventId: "",
     title: "",
     desc: "",
-    start: "",
-    end: "",
+    start: new Date(),
+    end: new Date(),
     file: null,
     allDay: 1,
     canView: 1,
@@ -155,6 +158,9 @@ const EventPage = () => {
       canUpdate: event.canUpdate
     };
 
+    setStartTime(event.start);
+    setEndTime(event.end);
+
     console.log(`Selected Event: ${JSON.stringify(newEvent)}`);
 
     setEvent(newEvent);
@@ -164,19 +170,30 @@ const EventPage = () => {
 
   // handle dates select
   const handleSelect = ({ start, end }) => {
-    // set dialog type
-    setDialogType("CREATE_EVENT");
+    // check current date
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+    if (start < now || end < now) {
+      setDialog({
+        isOpen: true,
+        title: "خطأ",
+        message: "لا يمكن إختيار تاريخ سابق"
+      });
+    } else {
+      // set dialog type
+      setDialogType("CREATE_EVENT");
 
-    setEvent({
-      ...event,
-      start: moment(start).format("YYYY-MM-DD HH:mm"),
-      end: moment(end)
-        .add(23, "hours")
-        .add(59, "minutes")
-        .format("YYYY-MM-DD HH:mm")
-    });
+      setEvent({
+        ...event,
+        start: moment(start).format("YYYY-MM-DD HH:mm"),
+        end: moment(end)
+          .add(23, "hours")
+          .add(59, "minutes")
+          .format("YYYY-MM-DD HH:mm")
+      });
 
-    setVisibility(true);
+      setVisibility(true);
+    }
   };
 
   // handle input change
@@ -208,15 +225,21 @@ const EventPage = () => {
     setEvent({ ...event, [name]: value });
   };
 
-  // handle date picker
-  const handleDatePickerChange = ({ start, end }) => {
+  // handle start date picker
+  const handleStartDatePickerChange = date => {
+    const startDate = moment(date).format("YYYY-MM-DD");
     setEvent({
       ...event,
-      start: moment(start._i).format("YYYY-MM-DD HH:mm"),
-      end: moment(end._i)
-        .add(23, "hours")
-        .add(59, "minutes")
-        .format("YYYY-MM-DD HH:mm")
+      start: startDate
+    });
+  };
+
+  // handle end date picker
+  const handleEndDatePickerChange = date => {
+    const endDate = moment(date).format("YYYY-MM-DD");
+    setEvent({
+      ...event,
+      end: endDate
     });
   };
 
@@ -292,8 +315,13 @@ const EventPage = () => {
 
         // get updated event
         if (newEvent !== null) {
-          const updatedEvents = await getEvents(user.username);
+          const updatedEvents = await getEvents(user.username, "active");
           setEvents(updatedEvents);
+
+          // update statistics
+          getTotalEvents(user.username);
+          getActiveEvents(user.username);
+          getDeletedEvents(user.username);
         }
       } else {
         let allDayStr = "";
@@ -316,8 +344,13 @@ const EventPage = () => {
 
         // get updated event
         if (newEvent !== null) {
-          const updatedEvents = await getEvents(user.username);
+          const updatedEvents = await getEvents(user.username, "active");
           setEvents(updatedEvents);
+
+          // update statistics
+          getTotalEvents(user.username);
+          getActiveEvents(user.username);
+          getDeletedEvents(user.username);
         }
       }
 
@@ -346,12 +379,7 @@ const EventPage = () => {
     e.preventDefault();
 
     // check for input
-    if (
-      event.title !== "" &&
-      event.desc !== "" &&
-      event.start !== "" &&
-      event.end !== ""
-    ) {
+    if (event.title !== "" && event.desc !== "") {
       // check for time
       if (event.file === null) {
         let allDayStr = "";
@@ -374,8 +402,13 @@ const EventPage = () => {
 
         // get updated events
         if (updatedEvent !== null) {
-          const updatedEvents = await getEvents(user.username);
+          const updatedEvents = await getEvents(user.username, "active");
           setEvents(updatedEvents);
+
+          // update statistics
+          getTotalEvents(user.username);
+          getActiveEvents(user.username);
+          getDeletedEvents(user.username);
         }
       } else {
         let allDayStr = "";
@@ -398,8 +431,13 @@ const EventPage = () => {
 
         // get updated events
         if (updatedEvent !== null) {
-          const updatedEvents = await getEvents(user.username);
+          const updatedEvents = await getEvents(user.username, "active");
           setEvents(updatedEvents);
+
+          // update statistics
+          getTotalEvents(user.username);
+          getActiveEvents(user.username);
+          getDeletedEvents(user.username);
         }
       }
 
@@ -428,8 +466,13 @@ const EventPage = () => {
 
     if (deletedEvent !== null) {
       // get updated events
-      const updatedEvents = await getEvents(user.username);
+      const updatedEvents = await getEvents(user.username, "active");
       setEvents(updatedEvents);
+
+      // update statistics
+      getTotalEvents(user.username);
+      getActiveEvents(user.username);
+      getDeletedEvents(user.username);
     }
 
     setVisibility(false);
@@ -443,6 +486,12 @@ const EventPage = () => {
       ...dialog,
       isOpen: false
     });
+  };
+
+  const handleLogout = e => {
+    e.preventDefault();
+    setUser(null);
+    history.goBack();
   };
 
   return user === null ? (
@@ -494,6 +543,7 @@ const EventPage = () => {
         open={isDrawerOpen}
       >
         <div className={classes.toolbarIcon}>
+          <label htmlFor="name">مرحبا {user.name.split(" ")[0]}</label>
           <IconButton onClick={handleDrawerClose}>
             <ChevronLeft />
           </IconButton>
@@ -501,7 +551,7 @@ const EventPage = () => {
         <Divider />
         <List>{mainListItems}</List>
         <Divider />
-        <List>{secondaryListItems}</List>
+        <List onClick={handleLogout}>{secondaryListItems}</List>
       </Drawer>
       <main className={classes.content}>
         <div className={classes.appBarSpacer} />
@@ -561,15 +611,17 @@ const EventPage = () => {
             isActive={isActive}
             onEditToggle={handleEditToggle}
             onInputChange={handleInputChange}
-            onEditDatePickerChange={handleDatePickerChange}
             onEditSubmit={handleEditSubmit}
             onDelete={handleDelete}
+            onStartDatePickerChange={handleStartDatePickerChange}
+            onEndDatePickerChange={handleEndDatePickerChange}
             onStartTimePickerChange={handleStartTimePickerChange}
             onEndTimePickerChange={handleEndTimePickerChange}
             onDialogClose={handleDialogClose}
           />
         )}
       </Dialog>
+      <InfoDialog dialog={dialog} onDialogClose={handleDialogClose} />
     </div>
   );
 };

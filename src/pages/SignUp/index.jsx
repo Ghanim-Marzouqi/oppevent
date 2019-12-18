@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { withRouter } from "react-router-dom";
+import { Link, withRouter } from "react-router-dom";
 import { useStyles } from "./signup.style";
 import "./signup.css";
 import {
@@ -128,7 +128,6 @@ const SignUpPage = () => {
                 label="اسم المستخدم"
                 name="username"
                 autoComplete="username"
-                autoFocus
                 value={form.username || ""}
                 error={form.username === "" && form.isFormSubmitted}
                 helperText={
@@ -206,6 +205,13 @@ const SignUpPage = () => {
               >
                 تسجيل مستخدم جديد
               </Button>
+              <Grid container justify="center">
+                <Grid item>
+                  <Link className={classes.textField} to="/">
+                    الرجوع إلى القائمة الرئيسية
+                  </Link>
+                </Grid>
+              </Grid>
               <Box mt={5}>
                 <Copyright />
               </Box>

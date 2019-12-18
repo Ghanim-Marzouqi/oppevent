@@ -187,7 +187,7 @@ const LoginPage = () => {
                 تسجيل الدخول
               </Button>
               <Grid container>
-                <Grid item xs>
+                <Grid item>
                   <Link
                     onClick={() =>
                       setDialog({
