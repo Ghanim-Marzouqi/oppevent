@@ -1,0 +1,13 @@
+.MuiPickersToolbar-toolbar {
+  justify-content: space-around !important;
+  direction: ltr !important;
+  flex-direction: row-reverse !important;
+}
+
+.MuiPickersTimePickerToolbar-hourMinuteLabelReverse {
+  flex-direction: row !important;
+}
+
+.MuiPickersDatePickerRoot-toolbar {
+  align-items: center !important;
+}

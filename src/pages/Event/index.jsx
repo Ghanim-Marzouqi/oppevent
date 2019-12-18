@@ -64,7 +64,12 @@ const EventPage = () => {
     start: "",
     end: "",
     file: null,
-    allDay: 1
+    allDay: 1,
+    canView: 1,
+    canDelete: 1,
+    canUpdate: 1,
+    isFormSubmitted: false,
+    isFormEditted: false
   };
 
   // initial dialog
@@ -76,8 +81,8 @@ const EventPage = () => {
 
   // states
   const [isDrawerOpen, setDrawerOpen] = useState(true);
-  const [startTime, setStartTime] = useState("");
-  const [endTime, setEndTime] = useState("");
+  const [startTime, setStartTime] = useState(new Date());
+  const [endTime, setEndTime] = useState(new Date());
   const [isVisible, setVisibility] = useState(false);
   const [dialogType, setDialogType] = useState("");
   const [isActive, setActive] = useState(false);
@@ -144,7 +149,10 @@ const EventPage = () => {
       end: event.end,
       desc: event.desc,
       allDay: event.allDay,
-      file: event.file
+      file: event.file,
+      canView: event.canView,
+      canDelete: event.canDelete,
+      canUpdate: event.canUpdate
     };
 
     console.log(`Selected Event: ${JSON.stringify(newEvent)}`);
@@ -177,10 +185,15 @@ const EventPage = () => {
     let value = null;
 
     // check for input type
-    if (name === "allDay") {
+    if (
+      name === "allDay" ||
+      name === "canView" ||
+      name === "canDelete" ||
+      name === "canUpdate"
+    ) {
       e.target.checked ? (value = 1) : (value = 0);
       // reset time values
-      if (value === 1) {
+      if (name === "allDay" && value === 1) {
         setStartTime("");
         setEndTime("");
       }
@@ -208,8 +221,13 @@ const EventPage = () => {
   };
 
   // handle start time picker
-  const handleStartTimePickerChange = time => {
-    if (time !== null) {
+  const handleStartTimePickerChange = date => {
+    setStartTime(date);
+
+    // extract time
+    const time = moment(date).format("HH:mm");
+
+    if (time) {
       // update start date
       const startDate = moment(event.start).format("YYYY-MM-DD");
       setEvent({
@@ -219,13 +237,17 @@ const EventPage = () => {
           .add(Number.parseInt(time.split(":")[1]), "minutes")
           .format("YYYY-MM-DD HH:mm")
       });
-      setStartTime(time);
     }
   };
 
   // handle end time picker
-  const handleEndTimePickerChange = time => {
-    if (time !== null) {
+  const handleEndTimePickerChange = date => {
+    setEndTime(date);
+
+    // extract time
+    const time = moment(date).format("HH:mm");
+
+    if (time) {
       // update start date
       const endDate = moment(event.end).format("YYYY-MM-DD");
       setEvent({
@@ -235,7 +257,6 @@ const EventPage = () => {
           .add(Number.parseInt(time.split(":")[1]), "minutes")
           .format("YYYY-MM-DD HH:mm")
       });
-      setEndTime(time);
     }
   };
 
@@ -243,67 +264,71 @@ const EventPage = () => {
   const handleSubmit = async e => {
     e.preventDefault();
 
-    console.log(
-      `All Day: ${event.allDay} - Start Time: ${startTime} - End Time: ${endTime}`
-    );
+    setEvent({
+      ...event,
+      isFormSubmitted: true
+    });
 
-    // check for time
-    if (event.file === null) {
-      let allDayStr = "";
-      if (event.allDay === 1) {
-        allDayStr = "yes";
-      } else if (event.allDay === 0 && startTime !== "" && endTime !== "") {
-        allDayStr = "no";
+    // check for inputs
+    if (event.title !== "" && event.desc !== "") {
+      if (event.file === null) {
+        let allDayStr = "";
+        if (event.allDay === 1) {
+          allDayStr = "yes";
+        } else if (event.allDay === 0 && startTime !== "" && endTime !== "") {
+          allDayStr = "no";
+        } else {
+          alert("الرجاء إختيار أوقات المهمة");
+          return;
+        }
+
+        // add event with no file
+        const newEvent = await addNewEvent(
+          user.username,
+          allDayStr,
+          "NO_FILE",
+          event
+        );
+
+        // get updated event
+        if (newEvent !== null) {
+          const updatedEvents = await getEvents(user.username);
+          setEvents(updatedEvents);
+        }
       } else {
-        alert("الرجاء إختيار أوقات المهمة");
-        return;
+        let allDayStr = "";
+        if (event.allDay) {
+          allDayStr = "yes";
+        } else if (event.allDay !== 1 && startTime !== "" && endTime !== "") {
+          allDayStr = "no";
+        } else {
+          alert("الرجاء إختيار أوقات المهمة");
+          return;
+        }
+
+        // add event with a file
+        const newEvent = await addNewEvent(
+          user.username,
+          allDayStr,
+          "FILE",
+          event
+        );
+
+        // get updated event
+        if (newEvent !== null) {
+          const updatedEvents = await getEvents(user.username);
+          setEvents(updatedEvents);
+        }
       }
 
-      // add event with no file
-      const newEvent = await addNewEvent(
-        user.username,
-        allDayStr,
-        "NO_FILE",
-        event
-      );
-
-      // get updated event
-      if (newEvent !== null) {
-        const updatedEvents = await getEvents(user.username);
-        setEvents(updatedEvents);
-      }
+      // reset
+      setEvent(initialEvent);
+      setStartTime("");
+      setEndTime("");
+      setVisibility(false);
     } else {
-      let allDayStr = "";
-      if (event.allDay) {
-        allDayStr = "yes";
-      } else if (event.allDay !== 1 && startTime !== "" && endTime !== "") {
-        allDayStr = "no";
-      } else {
-        alert("الرجاء إختيار أوقات المهمة");
-        return;
-      }
-
-      // add event with a file
-      const newEvent = await addNewEvent(
-        user.username,
-        allDayStr,
-        "FILE",
-        event
-      );
-
-      // get updated event
-      if (newEvent !== null) {
-        const updatedEvents = await getEvents(user.username);
-        setEvents(updatedEvents);
-      }
+      console.log("Title and Description are not provided");
     }
-
-    // reset
-    setEvent(initialEvent);
-    setStartTime("");
-    setEndTime("");
-
-    setVisibility(false);
   };
 
   // handle Edit Toggle Button
@@ -311,74 +336,85 @@ const EventPage = () => {
     e.preventDefault();
     setEvent({
       ...event,
-      file: null
+      file: null,
+      isFormEditted: !event.isFormEditted
     });
-    setActive(true);
   };
 
   // handle Edit Submit Button
   const handleEditSubmit = async e => {
     e.preventDefault();
 
-    // set start and end dates
-    await setStartTime(event.start.split(" ")[1]);
-    await setEndTime(event.end.split(" ")[1]);
+    // check for input
+    if (
+      event.title !== "" &&
+      event.desc !== "" &&
+      event.start !== "" &&
+      event.end !== ""
+    ) {
+      // check for time
+      if (event.file === null) {
+        let allDayStr = "";
+        if (event.allDay) {
+          allDayStr = "yes";
+        } else if (event.allDay !== 1 && startTime !== "" && endTime !== "") {
+          allDayStr = "no";
+        } else {
+          alert("الرجاء إختيار أوقات المهمة");
+          return;
+        }
 
-    // check for time
-    if (event.file === null) {
-      let allDayStr = "";
-      if (event.allDay) {
-        allDayStr = "yes";
-      } else if (event.allDay !== 1 && startTime !== "" && endTime !== "") {
-        allDayStr = "no";
+        // edit event with no file
+        const updatedEvent = await updateEvent(
+          user.username,
+          allDayStr,
+          "NO_FILE",
+          event
+        );
+
+        // get updated events
+        if (updatedEvent !== null) {
+          const updatedEvents = await getEvents(user.username);
+          setEvents(updatedEvents);
+        }
       } else {
-        alert("الرجاء إختيار أوقات المهمة");
-        return;
+        let allDayStr = "";
+        if (event.allDay) {
+          allDayStr = "yes";
+        } else if (event.allDay !== 1 && startTime !== "" && endTime !== "") {
+          allDayStr = "no";
+        } else {
+          alert("الرجاء إختيار أوقات المهمة");
+          return;
+        }
+
+        // update event with a file
+        const updatedEvent = await updateEvent(
+          user.username,
+          allDayStr,
+          "FILE",
+          event
+        );
+
+        // get updated events
+        if (updatedEvent !== null) {
+          const updatedEvents = await getEvents(user.username);
+          setEvents(updatedEvents);
+        }
       }
 
-      // edit event with no file
-      const updatedEvent = await updateEvent(
-        user.username,
-        allDayStr,
-        "NO_FILE",
-        event
-      );
-
-      // get updated events
-      if (updatedEvent !== null) {
-        const updatedEvents = await getEvents(user.username);
-        setEvents(updatedEvents);
-      }
+      // reset
+      setEvent(initialEvent);
+      setStartTime("");
+      setEndTime("");
     } else {
-      let allDayStr = "";
-      if (event.allDay) {
-        allDayStr = "yes";
-      } else if (event.allDay !== 1 && startTime !== "" && endTime !== "") {
-        allDayStr = "no";
-      } else {
-        alert("الرجاء إختيار أوقات المهمة");
-        return;
-      }
-
-      // update event with a file
-      const updatedEvent = await updateEvent(
-        user.username,
-        allDayStr,
-        "FILE",
-        event
-      );
-
-      // get updated events
-      if (updatedEvent !== null) {
-        const updatedEvents = await getEvents(user.username);
-        setEvents(updatedEvents);
-      }
+      // show error dialog
+      setDialog({
+        isOpen: true,
+        title: "حدث خطأ",
+        message: "الرجاء ملىء الحقول الفارغة"
+      });
     }
-
-    // reset
-    setEvent(initialEvent);
-    setStartTime("");
-    setEndTime("");
 
     setVisibility(false);
     setActive(true);
@@ -511,6 +547,8 @@ const EventPage = () => {
         {dialogType === "CREATE_EVENT" ? (
           <NewEventDialog
             event={event}
+            startTime={startTime}
+            endTime={endTime}
             onInputChange={handleInputChange}
             onSubmit={handleSubmit}
             onStartTimePickerChange={handleStartTimePickerChange}

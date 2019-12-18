@@ -20,7 +20,7 @@
 
 .rbc-header {
   background-color: #fbe6a2;
-  height: 40px !important;
+  /* height: 40px !important; */
   display: flex;
   justify-content: center;
   align-items: center;
