@@ -1,3 +1,1 @@
-REACT_APP_NAME=opp event
-REACT_APP_API_URL=http://localhost:3000
-REACT_APP_AUTH_TYPE=db
+# OPP Event
